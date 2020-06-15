@@ -22,11 +22,14 @@ import math
     
 """
 
-model_int = 'SphericalHarmonicsModels/Iterativo/165_165_7_17_int.npy'
-model_ext = 'SphericalHarmonicsModels/Iterativo/165_165_100_1_ext.npy'
+model_int = '165_165_7_17_int.npy'
+model_ext = '165_165_100_1_ext.npy'
 
 m_int = np.load(model_int, allow_pickle=True) #agregar como parametro antes de la función
 m_ext = np.load(model_ext, allow_pickle=True)
+
+G = 6.674 * 10**-11 #[m3/kg*s2]
+
 
 class MasconModel(Problem, object):
 
@@ -115,70 +118,24 @@ def runGA():
 
     saveJson(gaDict, 'n_' + str(n_mascons)) #save information in a json file
 
-    #Show mascons in 3D
-    #p = pv.PlotterITK() 
-    #createSphericalMeshMascons(res.X, p) Commented for run it in server.
-    #p.show()
-
-
-
- #Error array
-# = []  
-#Universal 
-G = 6.674 * 10**-11 #[m3/kg*s2]
-
-from numba import njit, jit, prange
-
 def fitness_function_3(x, np_ext, np_int, m_l, m_i, m_ext, m_int):
 
-    #Number of cpus
-    #cpus = multiprocessing.cpu_count()
-    
-    
-    #Error array
-    #J = []
-    
-   
-    #x_ready = [0] * len(x) #create flags for define if arrays is procesed or not. 
     m_ext_tp = [i[0] for i in m_ext] #asignar valor de coordenada de malla externa
     
     m_ext_a_sh = [i[1] for i in m_ext]
-    #print(m_ext_a_sh)
+
     p = Pool()
+
     args = [[i, m_int, m_i, m_ext_tp, m_ext_a_sh] for i in x]
     
     total = p.map(iterateArrays, args)
+
     p.close()
     
     p.join()
     
-    # x = [ [x1,x2,x3,...], [...], [...]    ]
-    # X ge
-    #e_i = []
-
-    #e_i = iterateArrays(G, i, m_ext, np_ext, m_int, m_i)
-    #Compute mean error
-
-    #Sum of error
-    #J = [ 1,1,1,1,1,1,1,1,1,1 ] 10
-    
     return np.array(total)
 
-#@jit("void(int64)")
-#def getModule(arr):
-#    
-#    return np.linalg.norm(arr)
-
-#@jit
-#def dist(a,b): 
-#    return np.sqrt(np.sum((a-b)**2)) 
-
-
-#def calc_dist(p1,p2): 
-#    return 
-
-
-#@njit
 def iterateArrays(args): 
         
         i = args[0]
@@ -205,59 +162,24 @@ def iterateArrays(args):
                     
                     r = np.subtract(r_tp, r_i)*1000 #vector r - distance between points todo review value
                     
-                    r_norm = math.sqrt((r_i[0] - r_tp[0]) ** 2 + (r_i[1] - r_tp[1]) ** 2 + (r_i[2] - r_tp[2]) ** 2)  * 1000
-                    #calc_dist(r_tp,r_i)*1000 #dist(r_tp,r_i)*1000 #module of vectir r
-                    #print(r_norm)
-                    #np.sqrt(np.sum((r_tp-r_i)**2))
-                    #print(calc_dist(r_tp,r_i))
+                    r_norm = math.sqrt((r_i[0] - r_tp[0]) ** 2 + (r_i[1] - r_tp[1]) ** 2 + (r_i[2] - r_tp[2]) ** 2)  * 1000            
                     
                     a_mascon_coord = -((G * m_i)/(r_norm)**3) * r #Compute gravity field
 
                     a_m[index] = np.sqrt(a_mascon_coord[0]**2 + a_mascon_coord[1]**2 + a_mascon_coord[2]**2)
             
-                    #a_m[index] = np.sqrt(np.sum(np.square(a_mascon_coord)))
-            
             e_i[j] = np.abs(np.sum(a_m) - a_sh)
             
         e_i_mean = np.mean(e_i)
-        
-        #J.append(e_i_mean)
-        
+                
         return e_i_mean
         
-
-def createSphericalMeshMascons(array):
-    #print(array)
-    # Show the result
-    m_ext = np.load('SphericalHarmonicsModels/Iterativo/165_165_100_1_ext.npy', allow_pickle=True) #agregar como parametro antes de la función
-    m_int = np.load('SphericalHarmonicsModels/Iterativo/165_165_7_17_int.npy', allow_pickle=True)
-
-    for i in array: 
-        x_int_1 = m_int[i][0]
-        y_int_1 = m_int[i][1]
-        z_int_1 = m_int[i][2] #asignar valor de coordenada de malla externa
-
-        #Create array from cartesian coordinates.
-        point_cloud = pv.PolyData(np.c_[x_int_1, y_int_1, z_int_1]) 
-        p.add_points(point_cloud, color="red")    
-
-    #Show interactive plot
-    #p.set_background('black')
-    #p.show_grid(color='white')
-        
-    # Add moon representation
-    
-    p.add_mesh(
-        pv.Sphere(1738.1),
-        opacity=0.4, color="w",
-    )
- 
 def saveJson(dictData, name):
     with open('%s.json' % name, 'w',encoding='UTF-8') as json_file:
         json.dump(dictData, json_file)
 
 def getCoordinatesByIndex(index):
-    m_int = np.load('SphericalHarmonicsModels/Iterativo/165_165_7_17_int.npy', allow_pickle=True)
+    m_int = np.load('165_165_7_17_int.npy', allow_pickle=True)
     data = {}
     
     for i in index: 

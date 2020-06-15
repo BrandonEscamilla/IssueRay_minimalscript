@@ -174,7 +174,7 @@ def saveJson(dictData, name):
         json.dump(dictData, json_file)
 
 def getCoordinatesByIndex(index):
-    m_int = np.load('SphericalHarmonicsModels/Iterativo/165_165_7_17_int.npy', allow_pickle=True)
+    m_int = np.load('165_165_7_17_int.npy', allow_pickle=True)
     data = {}
     
     for i in index: 
