@@ -47,7 +47,7 @@ itk-meshtopolydata==0.5.1
 itk-numerics==5.0.1
 itkwidgets==0.26.1
 jedi==0.16.0
-Jinja2==2.11.1
+Jinja2==2.11.3
 json5==0.9.4
 jsonschema==3.2.0
 jupyter==1.0.0
